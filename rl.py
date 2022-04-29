@@ -10,8 +10,12 @@ import time
 from function import fun
 
 ARG_LIST = ['learning_rate', 'optimizer', 'memory_capacity', 'batch_size', 'target_frequency', 'maximum_exploration',
-            'max_timestep', 'first_step_memory', 'replay_steps', 'number_nodes', 'target_type', 'memory',
-            'prioritization_scale', 'dueling', 'agents_number', 'grid_size', 'game_mode', 'reward_mode']
+            'first_step_memory', 'replay_steps', 'number_nodes', 'target_type', 'memory',
+            'prioritization_scale', 'dueling', 'agents_number', 'grid_size', 'game_mode']
+            
+# Remove ARG_LIST = ['learning_rate', 'optimizer', 'memory_capacity', 'batch_size', 'target_frequency', 'maximum_exploration',
+#            'max_timestep', 'first_step_memory', 'replay_steps', 'number_nodes', 'target_type', 'memory',
+#            'prioritization_scale', 'dueling', 'agents_number', 'grid_size', 'game_mode', 'reward_mode']
 
 
 def get_name_brain(args, idx):
@@ -42,126 +46,70 @@ class Environment(object):
         self.episodes_number = arguments['episode_number']
         self.render = arguments['render']
         self.recorder = arguments['recorder']
-        self.max_ts = arguments['max_timestep']
+        # Remove self.max_ts = arguments['max_timestep']
         self.test = arguments['test']
         self.filling_steps = arguments['first_step_memory']
         self.steps_b_updates = arguments['replay_steps']
         self.max_random_moves = arguments['max_random_moves']
-
         self.num_agents = arguments['agents_number']
-        self.num_landmarks = arguments['landmarks_number']
+        self.num_landmarks = self.env.num_landmarks
         self.game_mode = arguments['game_mode']
         self.grid_size = arguments['grid_size']
 
     def run(self, agents, file1, file2):
-
         total_step = 0
         rewards_list = []
-        timesteps_list = []
         max_score = -10000
-        for episode_num in xrange(self.episodes_number):
+        for episode_num in range(self.episodes_number):
             state_vis, state = self.env.reset()
-            print(state)
-            
-            #print('11111111111')
+            self.num_landmarks = self.env.num_landmarks
             if self.render:
                 self.env.render(episode_num)
-
-            #random_moves = random.randint(0, self.max_random_moves)//////////////////
-
-            # create randomness in initial state
-            
-
-            # converting list of positions to an array
+                
             state = np.array(state)
             state = state.ravel()
-
             done = False
-            reward_all = 0
-            time_step = 0
-            
-
-            # if self.render:
-            #     self.env.render()
             actions = []
+            
             for agent in agents:
-                actions.append(agent.greedy_actor(state))
+                actions.append(agent.greedy_actor(state,self.num_landmarks))
             next_state, reward, done = self.env.step(actions)
-            if not self.test:
-                d1 = [state[self.num_landmarks*2], state[self.num_landmarks*2 +1]]
-                d2 = [state[self.num_landmarks*2+2], state[self.num_landmarks*2 +3]]
-                d3 = [state[self.num_landmarks*2+4], state[self.num_landmarks*2 +5]]
-                att = [(state[0],state[1]),(state[2],state[3]),(state[4],state[5]),(state[6],state[7]),(state[8],state[9])]
-                velocity = [state[self.num_landmarks*2 +6 :]]
-                _,_,act = fun(d1,d2,d3,att,velocity)
-                act = np.array(act)
-                act = act.astype(int)
-                for i in range(len(act)):
-                    if act[i]>10:
-                        act[i] = 0
-                    else:
-                        act[i] +=1
-                ns,r,d = self.env.step(act)
-                print(reward,r,"REWARD")
-                if r > reward:
-                    print("scaff")
-                    next_state = ns
-                    reward = r
-                    done = d
-                    actions = act
-            # converting list of positions to an array
             next_state = np.array(next_state)
             next_state = next_state.ravel()
-
-            if not self.test:
-                
-                for agent in agents:
-                    agent.observe((state, actions, reward, next_state, done))
-                    if total_step >= self.filling_steps:
-                        agent.decay_epsilon()
-                        if time_step % self.steps_b_updates == 0:
-                            agent.replay()
-                        agent.update_target_model()
-
-            total_step += 1
-            time_step += 1
-            state = next_state
-            reward_all += reward
-            #print('Render')
-            #time.sleep(1)
-
+            
+            if not self.test:          
+                for idx,agent in enumerate(agents):
+                    agent.train(state,actions[idx])
+                    agent.decay_epsilon()
+                    agent.update_target_model()
+                        
             if self.render:
                 self.env.render(episode_num)
-
-            rewards_list.append(reward_all)
-            timesteps_list.append(time_step)
-
-            print("Episode {p}, Score: {s}, Final Step: {t}, Goal: {g}".format(p=episode_num, s=reward_all,
-                                                                               t=time_step, g=done))
-
+                
+            rewards_list.append(reward)
+            
+            print("Episode {p}, Score: {s}, Final Step: {t}, Goal: {g}".format(p=episode_num, s=reward,
+                                                                               t=episode_num, g=done))
             if self.recorder:
-                os.system("ffmpeg -r 2 -i ./results_territory/snaps/%04d.png -b:v 40000 -minrate 40000 -maxrate 4000k -bufsize 1835k -c:v mjpeg -qscale:v 0 " + "./results_territory/videos/{a1}_{a2}_{a3}_{a4}.avi".format(a1=self.num_agents,
+                os.system("ffmpeg -r 2 -i ./results_agents_landmarks/snaps/%04d.png -b:v 40000 -minrate 40000 -maxrate 4000k -bufsize 1835k -c:v mjpeg -qscale:v 0 " + "./results_agents_landmarks/videos/{a1}_{a2}_{a3}_{a4}.avi".format(a1=self.num_agents,
                                                                                                  a2=self.num_landmarks,
                                                                                                  a3=self.game_mode,
                                                                                                  a4=self.grid_size))
-                files = glob.glob('./results_territory/snaps/*')
+                files = glob.glob('./results_agents_landmarks/snaps/*')
                 for f in files:
                     os.remove(f)
-
+                    
             if not self.test:
                 if episode_num % 100 == 0:
                     df = pd.DataFrame(rewards_list, columns=['score'])
                     df.to_csv(file1)
 
-                    df = pd.DataFrame(timesteps_list, columns=['steps'])
-                    df.to_csv(file2)
-
                     if total_step >= self.filling_steps:
-                        if reward_all > max_score:
+                        if reward > max_score:
                             for agent in agents:
                                 agent.brain.save_model()
-                            max_score = reward_all
-                            
+                            max_score = reward
+                                   
 if __name__ =="__main__":
 
     parser = argparse.ArgumentParser()
@@ -171,16 +119,16 @@ if __name__ =="__main__":
     parser.add_argument('-op', '--optimizer', choices=['Adam', 'RMSProp'], default='RMSProp',
                         help='Optimization method')
     parser.add_argument('-m', '--memory-capacity', default=1000000, type=int, help='Memory capacity')
-    parser.add_argument('-b', '--batch-size', default=64, type=int, help='Batch size')
+    parser.add_argument('-b', '--batch-size', default=1, type=int, help='Batch size')
     parser.add_argument('-t', '--target-frequency', default=100, type=int,
                         help='Number of steps between the updates of target network')
-    parser.add_argument('-x', '--maximum-exploration', default=100, type=int, help='Maximum exploration step')
+    parser.add_argument('-x', '--maximum-exploration', default=1000, type=int, help='Maximum exploration step')
     parser.add_argument('-fsm', '--first-step-memory', default=0, type=float,
                         help='Number of initial steps for just filling the memory')
     parser.add_argument('-rs', '--replay-steps', default=4, type=float, help='Steps between updating the network')
     parser.add_argument('-nn', '--number-nodes', default=256, type=int, help='Number of nodes in each layer of NN')
     parser.add_argument('-tt', '--target-type', choices=['DQN', 'DDQN'], default='DDQN')
-    parser.add_argument('-mt', '--memory', choices=['UER', 'PER'], default='UER')
+    parser.add_argument('-mt', '--memory', choices=['UER', 'PER'], default='PER')
     parser.add_argument('-pl', '--prioritization-scale', default=0.5, type=float, help='Scale for prioritization')
     parser.add_argument('-du', '--dueling', action='store_true', help='Enable Dueling architecture if "store_false" ')
 
@@ -189,19 +137,19 @@ if __name__ =="__main__":
 
     # Game Parameters
     parser.add_argument('-k', '--agents-number', default=3, type=int, help='The number of agents')
-    parser.add_argument('-lm', '--landmarks-number', default=5, type=int, help='The number of landmarks')
+    # Remove parser.add_argument('-lm', '--landmarks-number', default=5, type=int, help='The number of landmarks')
     parser.add_argument('-g', '--grid-size', default=10, type=int, help='Grid size')
-    parser.add_argument('-ts', '--max-timestep', default=100, type=int, help='Maximum number of timesteps per episode')
+    # Remove parser.add_argument('-ts', '--max-timestep', default=100, type=int, help='Maximum number of timesteps per episode')
     parser.add_argument('-gm', '--game-mode', choices=[0, 1], type=int, default=1, help='Mode of the game, '
                                                                                         '0: landmarks and agents fixed, '
                                                                                         '1: landmarks and agents random ')
 
-    parser.add_argument('-rw', '--reward-mode', choices=[0, 1, 2], type=int, default=0, help='Mode of the reward,'
-                                                                                             '0: Only terminal rewards'
-                                                                                             '1: Partial rewards '
-                                                                                             '(number of unoccupied landmarks'
-                                                                                             '2: Full rewards '
-                                                                                             '(sum of dinstances of agents to landmarks)')
+    # Remove parser.add_argument('-rw', '--reward-mode', choices=[0, 1, 2], type=int, default=0, help='Mode of the reward,'
+    #                                                                                         '0: Only terminal rewards'
+    #                                                                                         '1: Partial rewards '
+    #                                                                                         '(number of unoccupied landmarks'
+    #                                                                                         '2: Full rewards '
+    #                                                                                        '(sum of dinstances of agents to landmarks)')
 
     parser.add_argument('-rm', '--max-random-moves', default=0, type=int,
                         help='Maximum number of random initial moves for the agents')
@@ -219,15 +167,11 @@ if __name__ =="__main__":
 
     state_size = env.env.state_size
     action_space = env.env.action_space()
+    print(action_space)
 
     all_agents = []
-    try:
-    # Python 2
-        xrange
-    except NameError:
-    # Python 3, xrange is now named range
-        xrange = range
-    for b_idx in xrange(args['agents_number']):
+    
+    for b_idx in range(args['agents_number']):
 
         brain_file = get_name_brain(args, b_idx)
         all_agents.append(Agent(state_size, action_space, b_idx, brain_file, args))
@@ -236,3 +180,8 @@ if __name__ =="__main__":
     timesteps_file = get_name_timesteps(args)
 
     env.run(all_agents, rewards_file, timesteps_file)
+    
+    
+    
+    
+    

@@ -1,4 +1,7 @@
 import numpy as np
 import random
-idx = random.randrange(5)
-print(idx)
+b1 = [1,2,3,4]
+for i,j in enumerate(b1):
+    print(i,j)
+
+

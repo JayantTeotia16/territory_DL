@@ -56,13 +56,13 @@ class Brain(object):
             z = Lambda(lambda a: K.expand_dims(a[:, 0], axis=-1) + a[:, 1:] - K.mean(a[:, 1:], keepdims=True),
                        output_shape=(self.action_size,))(w)
         else:
-            x = Input(shape=(self.state_size,))
+            x = Input(shape=(self.state_size,1))
 
             # a series of fully connected layer for estimating Q(s,a)
 
             y1 = Dense(self.num_nodes, activation='relu')(x)
             y2 = Dense(self.num_nodes, activation='relu')(y1)
-            z = Dense(self.action_size, activation="linear")(y2)
+            z = Dense(1, activation="linear")(y2)
 
         model = Model(inputs=x, outputs=z)
 

@@ -8,14 +8,6 @@ Created on Wednesday Jan  16 2019
 import random
 from sum_tree import SumTree as ST
 
-try:
-    # Python 2
-    xrange
-except NameError:
-    # Python 3, xrange is now named range
-    xrange = range
-
-
 class Memory(object):
     e = 0.05
 
@@ -40,7 +32,7 @@ class Memory(object):
         sample_batch_priorities = []
         num_segments = self.memory.total() / n
 
-        for i in xrange(n):
+        for i in range(n):
             left = num_segments * i
             right = num_segments * (i + 1)
 
@@ -53,6 +45,6 @@ class Memory(object):
         return [sample_batch, sample_batch_indices, sample_batch_priorities]
 
     def update(self, batch_indices, errors):
-        for i in xrange(len(batch_indices)):
+        for i in range(len(batch_indices)):
             p = self.get_priority(errors[i])
             self.memory.update(batch_indices[i], p)
