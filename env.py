@@ -80,6 +80,7 @@ class territory:
         positions_idx = []
         b2 = []
         b1 = []
+        self.b3 = []
         a = [i for i in range(10)]
         for _ in a:
             b2.append(_)
@@ -141,9 +142,31 @@ class territory:
         return (self.grid_size *4) -4
         
     def step(self, agents_actions):
-    
         action_idx = []    
         reward = 0    
+        time = []
+        scaff_act = np.zeros((self.num_agents,self.state_size))
+        indx = []
+        for j,i in enumerate(self.idx_val):
+            if i != 0:
+                time.append(i)    
+
+        act = fun(self.agents_positions , self.landmarks_positions, time)
+        for i in range(len(act)):
+            indx.append([])
+            for j in range(len(act[i])):
+                a = self.landmarks_positions[int(act[i][j])]
+                indx[i].append(a[0]*10 + a[1])
+        for k in range(self.num_agents):
+            indx[k].sort()
+            l = 0        
+            for idd,j in enumerate(self.b3):
+                if l >= len(indx[k]):
+                    break
+                if j == indx[k][l]:
+                    scaff_act[k][idd] = 1
+                    l+=1
+
         for j in range(self.num_agents):
             act = []
             for i in range(self.state_size):
@@ -161,8 +184,10 @@ class territory:
                     self.idx_val[i] = 0 
         if sum(self.idx_val) == 0:
             reward += 5
-            
-        ##Add scaffold
+        for i in range(self.num_agents):
+            for j in range(self.state_size):
+                if scaff_act[i][j] ==1 and self.idx_val !=0:
+                    reward +=1
         self.terminal = True
         return self.idx_val, reward, self.terminal
         
