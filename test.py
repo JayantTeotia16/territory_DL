@@ -1,12 +1,8 @@
 import numpy as np
 import random
 b1 = [1,2,3,4]
-for i,j in enumerate(b1):
-    if j ==3:
-        i = 0
-        j = b1[i]
-    print(i,j)
 
-
-
-
+print(np.shape(b1))
+b1 = np.array(b1)
+b2 = np.array(b1)
+print(np.equal(b1,b2))

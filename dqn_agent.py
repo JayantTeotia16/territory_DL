@@ -196,7 +196,8 @@ class Agent(object):
             
     def train(self, x, y):
     #Train using reward
-        x = tf.expand_dims(x, axis=1)
+        #x = tf.expand_dims(x, axis=1)
+        x = x.reshape((-1,1))
         y = tf.expand_dims(y, axis=1)
         self.brain.train(x, y)
             
