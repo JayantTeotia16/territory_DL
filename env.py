@@ -186,7 +186,7 @@ class territory:
             reward += 5
         for i in range(self.num_agents):
             for j in range(self.state_size):
-                if scaff_act[i][j] ==1 and self.idx_val !=0:
+                if scaff_act[i][j] ==1 and self.idx_val[j] !=0:
                     reward +=1
         self.terminal = True
         return self.idx_val, reward, self.terminal
@@ -225,7 +225,7 @@ class territory:
         
     def render(self,episode_num):
 
-        pygame.time.delay(500)
+        pygame.time.delay(10)
         pygame.display.flip()
 
         for event in pygame.event.get():

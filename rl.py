@@ -127,7 +127,7 @@ if __name__ =="__main__":
                         help='Number of initial steps for just filling the memory')
     parser.add_argument('-rs', '--replay-steps', default=4, type=float, help='Steps between updating the network')
     parser.add_argument('-nn', '--number-nodes', default=256, type=int, help='Number of nodes in each layer of NN')
-    parser.add_argument('-tt', '--target-type', choices=['DQN', 'DDQN'], default='DDQN')
+    parser.add_argument('-tt', '--target-type', choices=['DQN', 'DDQN'], default='DQN')
     parser.add_argument('-mt', '--memory', choices=['UER', 'PER'], default='PER')
     parser.add_argument('-pl', '--prioritization-scale', default=0.5, type=float, help='Scale for prioritization')
     parser.add_argument('-du', '--dueling', action='store_true', help='Enable Dueling architecture if "store_false" ')

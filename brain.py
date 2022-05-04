@@ -1,6 +1,6 @@
 import os
-from keras.models import Sequential, Model
-from keras.layers import Dense, Lambda, Input, Concatenate
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense, Lambda, Input, Concatenate
 from tensorflow.keras.optimizers import *
 import tensorflow as tf
 from tensorflow.keras import backend as K
