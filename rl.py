@@ -79,7 +79,7 @@ class Environment(object):
             
             if not self.test:          
                 for idx,agent in enumerate(agents):
-                    agent.train(state,actions[idx])
+                    agent.train(state,actions[idx])                    
                     agent.decay_epsilon()
                     agent.update_target_model()
                         

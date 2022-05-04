@@ -184,10 +184,17 @@ class territory:
                     self.idx_val[i] = 0 
         if sum(self.idx_val) == 0:
             reward += 5
+        print(np.shape(agents_actions))
+        rew_eq = np.equal(scaff_act,agents_actions)
         for i in range(self.num_agents):
             for j in range(self.state_size):
+<<<<<<< HEAD
                 if scaff_act[i][j] ==1 and self.idx_val[j] !=0:
                     reward +=1
+=======
+                if rew_eq[i][j] == False:
+                    reward -=1
+>>>>>>> fa0bea9b1314d2ab204cc4e2f85e4b58bf330599
         self.terminal = True
         return self.idx_val, reward, self.terminal
         
