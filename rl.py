@@ -65,24 +65,34 @@ class Environment(object):
             self.num_landmarks = self.env.num_landmarks
             if self.render:
                 self.env.render(episode_num)
-                
+            state = state.reshape((1,len(state)))
+            #print(state,"1")    
             state = np.array(state)
-            state = state.ravel()
+            #print(state,"2")
+            #state = state.ravel()
+            #print(state,"3")
             done = False
             actions = []
             
             for agent in agents:
                 actions.append(agent.greedy_actor(state,self.num_landmarks))
-            next_state, reward, done = self.env.step(actions)
+                
+            next_state, reward, done, sca_id = self.env.step(actions)
+            #print(sca_id,"SCAFF")
             next_state = np.array(next_state)
             next_state = next_state.ravel()
+            #print([state],"ss")
             
             if not self.test:          
                 for idx,agent in enumerate(agents):
-                    agent.train(state,actions[idx])                    
+                    
+                    aa = sca_id[idx]
+                    aa = aa.reshape((1,len(aa)))
+                    print(aa,"1")
+                    agent.train(state,aa)                    
                     agent.decay_epsilon()
                     agent.update_target_model()
-                        
+                       
             if self.render:
                 self.env.render(episode_num)
                 
@@ -100,23 +110,23 @@ class Environment(object):
                     os.remove(f)
                     
             if not self.test:
-                if episode_num % 100 == 0:
+                if episode_num % 500 == 0:
                     df = pd.DataFrame(rewards_list, columns=['score'])
                     df.to_csv(file1)
 
-                    if total_step >= self.filling_steps:
-                        if reward > max_score:
-                            for agent in agents:
-                                agent.brain.save_model()
-                            max_score = reward
+                    
+                    for agent in agents:
+                        agent.brain.save_model()
+                    max_score = reward
+            
                                    
 if __name__ =="__main__":
 
     parser = argparse.ArgumentParser()
     # DQN Parameters
-    parser.add_argument('-e', '--episode-number', default=10000, type=int, help='Number of episodes')
+    parser.add_argument('-e', '--episode-number', default=100000, type=int, help='Number of episodes')
     parser.add_argument('-l', '--learning-rate', default=0.00005, type=float, help='Learning rate')
-    parser.add_argument('-op', '--optimizer', choices=['Adam', 'RMSProp'], default='RMSProp',
+    parser.add_argument('-op', '--optimizer', choices=['Adam', 'RMSProp'], default='Adam',
                         help='Optimization method')
     parser.add_argument('-m', '--memory-capacity', default=1000000, type=int, help='Memory capacity')
     parser.add_argument('-b', '--batch-size', default=1, type=int, help='Batch size')

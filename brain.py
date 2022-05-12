@@ -48,7 +48,7 @@ class Brain(object):
 
             y21 = Dense(self.num_nodes, activation='relu')(x)
             y22 = Dense(self.num_nodes, activation='relu')(y21)
-            y23 = Dense(self.action_size, activation="linear")(y22)
+            y23 = Dense(self.action_size, activation="sigmoid")(y22)
 
             w = Concatenate(axis=-1)([y13, y23])
 
@@ -56,13 +56,13 @@ class Brain(object):
             z = Lambda(lambda a: K.expand_dims(a[:, 0], axis=-1) + a[:, 1:] - K.mean(a[:, 1:], keepdims=True),
                        output_shape=(self.action_size,))(w)
         else:
-            x = Input(shape=(self.state_size,1))
+            x = Input(shape=(self.state_size,))
 
             # a series of fully connected layer for estimating Q(s,a)
 
             y1 = Dense(self.num_nodes, activation='relu')(x)
             y2 = Dense(self.num_nodes, activation='relu')(y1)
-            z = Dense(1, activation="linear")(y2)
+            z = Dense(self.action_size, activation="sigmoid")(y2)
 
         model = Model(inputs=x, outputs=z)
 
@@ -72,8 +72,8 @@ class Brain(object):
             optimizer = RMSprop(lr=self.learning_rate, clipnorm=1.)
         else:
             print('Invalid optimizer!')
-
-        model.compile(loss=huber_loss, optimizer=optimizer)
+        
+        model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=False), optimizer=optimizer)
         
         if self.test:
             if not os.path.isfile(self.weight_backup):
