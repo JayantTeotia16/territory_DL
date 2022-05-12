@@ -111,7 +111,7 @@ class territory:
             
         if self.game_mode == 1:
             idx = np.random.choice(range(self.state_size), size=self.num_landmarks, replace=False)
-            idx_value = np.zeros(self.state_size)
+            idx_value = np.ones(self.state_size)*10000
             for _ in range(self.num_landmarks):
                 idx_value[idx[_]] = np.random.randint(5,10)
                 b1.append(b2[idx[_]])
@@ -122,6 +122,7 @@ class territory:
 
         self.terminal = False
         self.num_landmarks = np.random.randint(1,6)
+        print(self.num_landmarks,"NUMLAND")
         [self.cells, self.positions_idx, self.idx_val] = self.set_positions_idx()
 
         # separate the generated position indices for pursuers, and evaders
@@ -148,7 +149,7 @@ class territory:
         scaff_act = np.zeros((self.num_agents,self.state_size))
         indx = []
         for j,i in enumerate(self.idx_val):
-            if i != 0:
+            if i < 100:
                 time.append(i)    
 
         act = fun(self.agents_positions , self.landmarks_positions, time)
@@ -177,26 +178,21 @@ class territory:
         for i in range(self.state_size): # state size is same as action space
             for j in range(len(agents_actions)):
                 if agents_actions[j][i] == 1:
-                    if self.idx_val[i] == 0:
-                        reward -= 1
+                    if self.idx_val[i] > 100:
+                        reward -= (5/self.num_landmarks)
                     else:
-                        reward +=1
-                    self.idx_val[i] = 0 
-        if sum(self.idx_val) == 0:
+                        reward += (5/self.num_landmarks)
+                    self.idx_val[i] = 10000 
+        if sum(self.idx_val) == 10000*self.state_size:
             reward += 5
         print(np.shape(agents_actions))
         rew_eq = np.equal(scaff_act,agents_actions)
         for i in range(self.num_agents):
             for j in range(self.state_size):
-<<<<<<< HEAD
-                if scaff_act[i][j] ==1 and self.idx_val[j] !=0:
-                    reward +=1
-=======
                 if rew_eq[i][j] == False:
-                    reward -=1
->>>>>>> fa0bea9b1314d2ab204cc4e2f85e4b58bf330599
+                    reward -= (5/self.num_landmarks)
         self.terminal = True
-        return self.idx_val, reward, self.terminal
+        return self.idx_val, reward, self.terminal, scaff_act
         
     def update_positions(self, ag_pos_list, act_list, lm_pos_list):
     

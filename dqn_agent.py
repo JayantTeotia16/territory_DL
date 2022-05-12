@@ -56,7 +56,7 @@ class Agent(object):
             a = self.brain.predict_one_sample(state)
             print(a,"CHECK")
             for i in range(len(a)):
-                if a[i] >= 0.75:
+                if abs(a[i]) >= 0.5:
                     a[i] = 1
                 else:
                     a[i] = 0
@@ -197,8 +197,8 @@ class Agent(object):
     def train(self, x, y):
     #Train using reward
         #x = tf.expand_dims(x, axis=1)
-        x = x.reshape((-1,1))
-        y = tf.expand_dims(y, axis=1)
+        #x = x.reshape((-1,1))
+        #y = tf.expand_dims(y, axis=1)
         self.brain.train(x, y)
             
     def update_target_model(self):
