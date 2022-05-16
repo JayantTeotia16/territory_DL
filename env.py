@@ -41,7 +41,7 @@ class territory:
         self.render_flag = args['render']
         self.recorder_flag = args['recorder']
         # enables visualizer
-        if self.render_flag:
+        if not self.render_flag:
             [self.screen, self.my_font] = self.gui_setup()
             self.step_num = 1
 

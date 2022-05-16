@@ -1,8 +1,12 @@
 import numpy as np
 import random
-b1 = [1,2,3,4]
+from nn import Brain
 
-print(np.shape(b1))
-b1 = np.array(b1)
-b2 = np.array(b1)
-print(np.equal(b1,b2))
+
+a = Brain(3,3)
+x = [[1,0,0],[0,1,0],[0,0,1]]
+y = [[1,0,0],[0,1,0],[0,0,1]]
+a.train(x,y)
+b = [[1,0,0]]
+c = a.predict_one_sample(b)
+print(c)

@@ -12,6 +12,8 @@ MIN_EPSILON = 0.0 ######  Changed (0.01)
 MIN_BETA = 0.4
 MAX_BETA = 1.0
 
+n = 100
+
 class Agent(object):
     
     epsilon = MAX_EPSILON
@@ -115,45 +117,15 @@ class Agent(object):
 
         return [x, y, errors]
         
-    def find_targets_uer(self, batch):
-        batch_len = len(batch)
-
-        states = np.array([o[0] for o in batch])
-        states_ = np.array([o[3] for o in batch])
+    def find_targets_uer(self, x, y, r):
+        states = x
 
         p = self.brain.predict(states)
-        p_ = self.brain.predict(states_)
-        pTarget_ = self.brain.predict(states_, target=True)
+        pTarget = self.brain.predict(states, target=True)
+        
+        t = p + (y - p)/n
 
-        x = np.zeros((batch_len, self.state_size))
-        y = np.zeros((batch_len, self.action_size))
-        errors = np.zeros(batch_len)
-
-        for i in range(batch_len):
-            o = batch[i]
-            s = o[0]
-            a = o[1][self.bee_index]
-            r = o[2]
-            s_ = o[3]
-            done = o[4]
-
-            t = p[i]
-            old_value = t[a]
-            if done:
-                t[a] = r
-            else:
-                if self.target_type == 'DDQN':
-                    t[a] = r + self.gamma * pTarget_[i][np.argmax(p_[i])]
-                elif self.target_type == 'DQN':
-                    t[a] = r + self.gamma * np.amax(pTarget_[i])
-                else:
-                    print('Invalid type for target network!')
-
-            x[i] = s
-            y[i] = t
-            errors[i] = np.abs(t[a] - old_value)
-
-        return [x, y]  
+        return t
         
     def decay_epsilon(self):
         # slowly decrease Epsilon based on our experience
@@ -194,12 +166,13 @@ class Agent(object):
         else:
             print('Invalid memory model!')
             
-    def train(self, x, y):
+    def train(self, x, y, r):
     #Train using reward
         #x = tf.expand_dims(x, axis=1)
         #x = x.reshape((-1,1))
         #y = tf.expand_dims(y, axis=1)
-        self.brain.train(x, y)
+        a = self.find_targets_uer(x, y, r)
+        self.brain.train(x, a)
             
     def update_target_model(self):
         if self.step % self.update_target_frequency == 0:
