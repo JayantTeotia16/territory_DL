@@ -63,8 +63,8 @@ class Environment(object):
         for episode_num in range(self.episodes_number):
             state_vis, state = self.env.reset()
             self.num_landmarks = self.env.num_landmarks
-            if self.render:
-                self.env.render(episode_num)
+#            if self.render:
+#                self.env.render(episode_num)
             state = state.reshape((1,len(state)))
             #print(state,"1")    
             state = np.array(state)
@@ -93,31 +93,31 @@ class Environment(object):
                     agent.decay_epsilon()
                     agent.update_target_model()
                        
-            if self.render:
-                self.env.render(episode_num)
+#            if self.render:
+#                self.env.render(episode_num)
                 
             rewards_list.append(reward)
             
             print("Episode {p}, Score: {s}, Final Step: {t}, Goal: {g}".format(p=episode_num, s=reward,
                                                                                t=episode_num, g=done))
-            if self.recorder:
-                os.system("ffmpeg -r 2 -i ./results_agents_landmarks/snaps/%04d.png -b:v 40000 -minrate 40000 -maxrate 4000k -bufsize 1835k -c:v mjpeg -qscale:v 0 " + "./results_agents_landmarks/videos/{a1}_{a2}_{a3}_{a4}.avi".format(a1=self.num_agents,
-                                                                                                 a2=self.num_landmarks,
-                                                                                                 a3=self.game_mode,
-                                                                                                 a4=self.grid_size))
-                files = glob.glob('./results_agents_landmarks/snaps/*')
-                for f in files:
-                    os.remove(f)
+#            if self.recorder:
+#                os.system("ffmpeg -r 2 -i ./results_agents_landmarks/snaps/%04d.png -b:v 40000 -minrate 40000 -maxrate 4000k -bufsize 1835k -c:v mjpeg -qscale:v 0 " + "./#results_agents_landmarks/videos/{a1}_{a2}_{a3}_{a4}.avi".format(a1=self.num_agents,
+#                                                                                                 a2=self.num_landmarks,
+#                                                                                                 a3=self.game_mode,
+#                                                                                                 a4=self.grid_size))
+#                files = glob.glob('./results_agents_landmarks/snaps/*')
+#                for f in files:
+#                    os.remove(f)
                     
             if not self.test:
                 if episode_num % 500 == 0:
                     df = pd.DataFrame(rewards_list, columns=['score'])
                     df.to_csv(file1)
 
-                    
-                    for agent in agents:
-                        agent.brain.save_model()
-                    max_score = reward
+                    if reward >= max_score:
+                        for agent in agents:
+                            agent.brain.save_model()
+                        max_score = reward
             
                                    
 if __name__ =="__main__":

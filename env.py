@@ -41,7 +41,7 @@ class territory:
         self.render_flag = args['render']
         self.recorder_flag = args['recorder']
         # enables visualizer
-        if self.render_flag:
+        if not self.render_flag:
             [self.screen, self.my_font] = self.gui_setup()
             self.step_num = 1
 
@@ -113,7 +113,7 @@ class territory:
             idx = np.random.choice(range(self.state_size), size=self.num_landmarks, replace=False)
             idx_value = np.ones(self.state_size)*10000
             for _ in range(self.num_landmarks):
-                idx_value[idx[_]] = np.random.randint(5,10)
+                idx_value[idx[_]] = np.random.randint(10,30)
                 b1.append(b2[idx[_]])
             positions_idx = np.concatenate((b1,a1))
         return [cells, positions_idx, idx_value]
@@ -121,7 +121,7 @@ class territory:
     def reset(self):  # initialize the world
 
         self.terminal = False
-        self.num_landmarks = np.random.randint(1,6)
+        self.num_landmarks = np.random.randint(1,20)
         print(self.num_landmarks,"NUMLAND")
         [self.cells, self.positions_idx, self.idx_val] = self.set_positions_idx()
 
@@ -271,9 +271,9 @@ class territory:
                                      [(MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN + 50, WIDTH,
                                       HEIGHT])
 
-        if not self.recorder_flag:
-            file_name = "%04d.png" % episode_num
-            pygame.image.save(self.screen, os.path.join(self.snaps_path, file_name))
+#        if not self.recorder_flag:
+#            file_name = "%04d.png" % episode_num
+#            pygame.image.save(self.screen, os.path.join(self.snaps_path, file_name))
 
         if not self.terminal:
             self.step_num += 1
