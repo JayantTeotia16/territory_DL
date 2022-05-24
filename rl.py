@@ -63,6 +63,7 @@ class Environment(object):
         for episode_num in range(self.episodes_number):
             state_vis, state = self.env.reset()
             self.num_landmarks = self.env.num_landmarks
+
             state = state.reshape((1,len(state)))
             #print(state,"1")    
             state = np.array(state)
@@ -91,23 +92,22 @@ class Environment(object):
                     if episode_num % 10 == 0:
                         agent.update_target_model()
                        
-           
                 
             rewards_list.append(reward)
             
             print("Episode {p}, Score: {s}, Final Step: {t}, Goal: {g}".format(p=episode_num, s=reward,
                                                                                t=episode_num, g=done))
-            
+
                     
             if not self.test:
                 if episode_num % 500 == 0:
                     df = pd.DataFrame(rewards_list, columns=['score'])
                     df.to_csv(file1)
 
-                    
-                    for agent in agents:
-                        agent.brain.save_model()
-                    max_score = reward
+                    if reward >= max_score:
+                        for agent in agents:
+                            agent.brain.save_model()
+                        max_score = reward
             
                                    
 if __name__ =="__main__":
@@ -136,7 +136,7 @@ if __name__ =="__main__":
     parser.add_argument('-test', '--test', default=0, help='Enable the test phase if "1"')
 
     # Game Parameters
-    parser.add_argument('-k', '--agents-number', default=3, type=int, help='The number of agents')
+    parser.add_argument('-k', '--agents-number', default=8, type=int, help='The number of agents')
     # Remove parser.add_argument('-lm', '--landmarks-number', default=5, type=int, help='The number of landmarks')
     parser.add_argument('-g', '--grid-size', default=10, type=int, help='Grid size')
     # Remove parser.add_argument('-ts', '--max-timestep', default=100, type=int, help='Maximum number of timesteps per episode')

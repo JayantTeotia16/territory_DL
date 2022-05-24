@@ -31,7 +31,7 @@ class territory:
         self.num_landmarks = 0
         self.grid_size = args['grid_size'] ### default 10
         #self.grid_size = 10
-        self.state_size = (self.grid_size *4) -4
+        self.state_size = ((self.grid_size *4) -4 )*2 + self.num_agents
         self.agents_positions = []
         self.landmarks_positions = []
         self.agents_positions_repeat = []
@@ -68,6 +68,8 @@ class territory:
         self.positions_idx = []
         self.idx_val = []
         self.b3 = []
+        self.a1 = []
+        self.s = []
 
         # self.agents_collide_flag = args['collide_flag']
         # self.penalty_per_collision = args['penalty_collision']
@@ -92,7 +94,8 @@ class territory:
             b2.append(_)
         for _ in b2:    
             self.b3.append(_)
-        a1 = [44,53,56]
+        #a1 = [44,53,56]
+        self.a1 = [34,35,46,56,65,64,53,43]
 
         if self.game_mode == 0:
             # first enter the positions for the landmarks and then for the agents. If the grid is n*n, then the
@@ -113,15 +116,15 @@ class territory:
             idx = np.random.choice(range(self.state_size), size=self.num_landmarks, replace=False)
             idx_value = np.ones(self.state_size)*10000
             for _ in range(self.num_landmarks):
-                idx_value[idx[_]] = np.random.randint(7,15)
+                idx_value[idx[_]] = np.random.randint(15,25)
                 b1.append(b2[idx[_]])
-            positions_idx = np.concatenate((b1,a1))
+            positions_idx = np.concatenate((b1,self.a1))
         return [cells, positions_idx, idx_value]
 
     def reset(self):  # initialize the world
 
         self.terminal = False
-        self.num_landmarks = np.random.randint(1,4)
+        self.num_landmarks = np.random.randint(1,36)
         print(self.num_landmarks,"NUMLAND")
         [self.cells, self.positions_idx, self.idx_val] = self.set_positions_idx()
 
@@ -136,8 +139,9 @@ class territory:
 
         initial_state_vis = list(sum(self.landmarks_positions + self.agents_positions, ()))
         self.state_repeat = initial_state_vis
+        self.s = self.idx_val + self.b3
 
-        return initial_state_vis, self.idx_val
+        return initial_state_vis, self.s
         
     def action_space(self):
         return (self.grid_size *4) -4
@@ -175,7 +179,7 @@ class territory:
                     act.append(self.b3[i])
             action_idx.append([self.cells[pos] for pos in act])
         new_agent_pos = self.update_positions(self.agents_positions, action_idx, self.landmarks_positions)
-        for i in range(self.state_size): # state size is same as action space
+        for i in range(len(self.idx_val)): # state size is same as action space
             for j in range(len(agents_actions)):
                 if agents_actions[j][i] == 1:
                     if self.idx_val[i] > 100:
@@ -271,9 +275,9 @@ class territory:
                                      [(MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN + 50, WIDTH,
                                       HEIGHT])
 
-        if not self.recorder_flag:
-            file_name = "%04d.png" % episode_num
-            pygame.image.save(self.screen, os.path.join(self.snaps_path, file_name))
+#        if not self.recorder_flag:
+#            file_name = "%04d.png" % episode_num
+#            pygame.image.save(self.screen, os.path.join(self.snaps_path, file_name))
 
         if not self.terminal:
             self.step_num += 1
