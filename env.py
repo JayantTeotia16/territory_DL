@@ -113,7 +113,7 @@ class territory:
             idx = np.random.choice(range(self.state_size), size=self.num_landmarks, replace=False)
             idx_value = np.ones(self.state_size)*10000
             for _ in range(self.num_landmarks):
-                idx_value[idx[_]] = np.random.randint(5,10)
+                idx_value[idx[_]] = np.random.randint(7,15)
                 b1.append(b2[idx[_]])
             positions_idx = np.concatenate((b1,a1))
         return [cells, positions_idx, idx_value]
@@ -121,7 +121,7 @@ class territory:
     def reset(self):  # initialize the world
 
         self.terminal = False
-        self.num_landmarks = np.random.randint(1,6)
+        self.num_landmarks = np.random.randint(1,4)
         print(self.num_landmarks,"NUMLAND")
         [self.cells, self.positions_idx, self.idx_val] = self.set_positions_idx()
 
