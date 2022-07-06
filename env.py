@@ -1,7 +1,6 @@
 import random
 import operator
 import numpy as np
-import pygame
 import sys
 import os
 from function import fun
@@ -25,7 +24,7 @@ MARGIN = 1
 class territory:
 
     def __init__(self, args, current_path):
-        self.game_mode = args['game_mode']
+        #self.game_mode = args['game_mode']
         # Remove self.reward_mode = args['reward_mode']
         self.num_agents = args['agents_number']
         self.num_landmarks = 0
@@ -37,33 +36,7 @@ class territory:
         self.agents_positions_repeat = []
         self.state_repeat = []
         self.vel = []
-
-        self.render_flag = args['render']
-        self.recorder_flag = args['recorder']
-        # enables visualizer
-        if self.render_flag:
-            [self.screen, self.my_font] = self.gui_setup()
-            self.step_num = 1
-
-            resource_path = os.path.join(current_path, 'environments')  # The resource folder path
-            resource_path = os.path.join(resource_path, 'agents_landmarks')  # The resource folder path
-            image_path = os.path.join(resource_path, 'images')  # The image folder path
-
-            img = pygame.image.load(os.path.join(image_path, 'agent.jpg')).convert()
-            self.img_agent = pygame.transform.scale(img, (WIDTH, WIDTH))
-            img = pygame.image.load(os.path.join(image_path, 'landmark.jpg')).convert()
-            self.img_landmark = pygame.transform.scale(img, (WIDTH, WIDTH))
-            img = pygame.image.load(os.path.join(image_path, 'agent_landmark.jpg')).convert()
-            self.img_agent_landmark = pygame.transform.scale(img, (WIDTH, WIDTH))
-            img = pygame.image.load(os.path.join(image_path, 'agent_agent_landmark.jpg')).convert()
-            self.img_agent_agent_landmark = pygame.transform.scale(img, (WIDTH, WIDTH))
-            img = pygame.image.load(os.path.join(image_path, 'agent_agent.jpg')).convert()
-            self.img_agent_agent = pygame.transform.scale(img, (WIDTH, WIDTH))
-
-            if not self.recorder_flag:
-                self.snaps_path = os.path.join(current_path, 'results_territory')  # The resource folder path
-                self.snaps_path = os.path.join(self.snaps_path, 'snaps')  # The resource folder path
-
+        
         self.cells = []
         self.positions_idx = []
         self.idx_val = []
@@ -94,28 +67,14 @@ class territory:
             self.b3.append(_)
         a1 = [44,53,56]
 
-        if self.game_mode == 0:
-            # first enter the positions for the landmarks and then for the agents. If the grid is n*n, then the
-            # positions are
-            #  0                1             2     ...     n-1
-            #  n              n+1           n+2     ...    2n-1
-            # 2n             2n+1          2n+2     ...    3n-1
-            #  .                .             .       .       .
-            #  .                .             .       .       .
-            #  .                .             .       .       .
-            # (n-1)*n   (n-1)*n+1     (n-1)*n+2     ...   n*n-1
-            # , e.g.,
-            # positions_idx = [0, 6, 23, 24] where 0 and 6 are the positions of landmarks and 23 and 24 are positions
-            # of agents
-            positions_idx = []
             
-        if self.game_mode == 1:
-            idx = np.random.choice(range(self.state_size), size=self.num_landmarks, replace=False)
-            idx_value = np.ones(self.state_size)*10000
-            for _ in range(self.num_landmarks):
-                idx_value[idx[_]] = np.random.randint(5,10)
-                b1.append(b2[idx[_]])
-            positions_idx = np.concatenate((b1,a1))
+        
+        idx = np.random.choice(range(self.state_size), size=self.num_landmarks, replace=False)
+        idx_value = np.ones(self.state_size)*10000
+        for _ in range(self.num_landmarks):
+            idx_value[idx[_]] = np.random.randint(5,10)
+            b1.append(b2[idx[_]])
+        positions_idx = np.concatenate((b1,a1))
         return [cells, positions_idx, idx_value]
 
     def reset(self):  # initialize the world
@@ -174,7 +133,6 @@ class territory:
                 if agents_actions[j][i] == 1:
                     act.append(self.b3[i])
             action_idx.append([self.cells[pos] for pos in act])
-        new_agent_pos = self.update_positions(self.agents_positions, action_idx, self.landmarks_positions)
         for i in range(self.state_size): # state size is same as action space
             for j in range(len(agents_actions)):
                 if agents_actions[j][i] == 1:
@@ -192,100 +150,7 @@ class territory:
                 if rew_eq[i][j] == False:
                     reward -= (5/self.num_landmarks)
         self.terminal = True
-        return self.idx_val, reward, self.terminal, scaff_act
-        
-    def update_positions(self, ag_pos_list, act_list, lm_pos_list):
-    
-        final_positions = []      
-        for idx in range(len(ag_pos_list)):
-            if len(act_list[idx]) != 0: 
-                final_positions.append(act_list[idx][len(act_list[idx]) - 1])    
-            else:
-                final_positions.append(ag_pos_list[idx])        
-        return final_positions
-        
-    def gui_setup(self):
-
-        # Initialize pygame
-        pygame.init()
-
-        # Set the HEIGHT and WIDTH of the screen
-        board_size_x = (WIDTH + MARGIN) * self.grid_size
-        board_size_y = (HEIGHT + MARGIN) * self.grid_size
-
-        window_size_x = int(board_size_x)
-        window_size_y = int(board_size_y * 1.2)
-
-        window_size = [window_size_x, window_size_y]
-        screen = pygame.display.set_mode(window_size)
-
-        # Set title of screen
-        pygame.display.set_caption("Drone assignment")
-
-        myfont = pygame.font.SysFont("monospace", 30)
-
-        return [screen, myfont]
-        
-    def render(self,episode_num):
-
-        pygame.time.delay(10)
-        pygame.display.flip()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-
-        self.screen.fill(BLACK)
-        text = self.my_font.render("Episode: {0}".format(episode_num), 1, WHITE)
-        self.screen.blit(text, (5, 15))
-
-        for row in range(self.grid_size):
-            for column in range(self.grid_size):
-                pos = (row, column)
-
-                frequency = self.find_frequency(pos, self.agents_positions)
-
-                if pos in self.landmarks_positions and frequency >= 1:
-                    if frequency == 1:
-                        self.screen.blit(self.img_agent_landmark,
-                                         ((MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN + 50))
-                    else:
-                        self.screen.blit(self.img_agent_agent_landmark,
-                                         ((MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN + 50))
-
-                elif pos in self.landmarks_positions:
-                    self.screen.blit(self.img_landmark,
-                                     ((MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN + 50))
-
-                elif frequency >= 1:
-                    if frequency == 1:
-                        self.screen.blit(self.img_agent,
-                                         ((MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN + 50))
-                    elif frequency > 1:
-                        self.screen.blit(self.img_agent_agent,
-                                         ((MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN + 50))
-                    else:
-                        print('Error!')
-                else:
-                    pygame.draw.rect(self.screen, WHITE,
-                                     [(MARGIN + WIDTH) * column + MARGIN, (MARGIN + HEIGHT) * row + MARGIN + 50, WIDTH,
-                                      HEIGHT])
-
-        if not self.recorder_flag:
-            file_name = "%04d.png" % episode_num
-            pygame.image.save(self.screen, os.path.join(self.snaps_path, file_name))
-
-        if not self.terminal:
-            self.step_num += 1
-            
-    def find_frequency(self, a, items):
-        freq = 0
-        for item in items:
-            if item == a:
-                freq += 1
-
-        return freq
-        
+        return self.idx_val, reward, self.terminal, scaff_act        
         
         
         

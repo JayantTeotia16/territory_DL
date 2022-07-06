@@ -11,7 +11,7 @@ from function import fun
 
 ARG_LIST = ['learning_rate', 'optimizer', 'memory_capacity', 'batch_size', 'target_frequency', 'maximum_exploration',
             'first_step_memory', 'replay_steps', 'number_nodes', 'target_type', 'memory',
-            'prioritization_scale', 'dueling', 'agents_number', 'grid_size', 'game_mode']
+            'prioritization_scale', 'dueling', 'agents_number', 'grid_size']
             
 # Remove ARG_LIST = ['learning_rate', 'optimizer', 'memory_capacity', 'batch_size', 'target_frequency', 'maximum_exploration',
 #            'max_timestep', 'first_step_memory', 'replay_steps', 'number_nodes', 'target_type', 'memory',
@@ -53,7 +53,6 @@ class Environment(object):
         self.max_random_moves = arguments['max_random_moves']
         self.num_agents = arguments['agents_number']
         self.num_landmarks = self.env.num_landmarks
-        self.game_mode = arguments['game_mode']
         self.grid_size = arguments['grid_size']
 
     def run(self, agents, file1, file2):
@@ -63,14 +62,8 @@ class Environment(object):
         for episode_num in range(self.episodes_number):
             state_vis, state = self.env.reset()
             self.num_landmarks = self.env.num_landmarks
-            if self.render:
-                self.env.render(episode_num)
             state = state.reshape((1,len(state)))
-            #print(state,"1")    
             state = np.array(state)
-            #print(state,"2")
-            #state = state.ravel()
-            #print(state,"3")
             done = False
             actions = []
             
@@ -93,21 +86,13 @@ class Environment(object):
                     agent.decay_epsilon()
                     agent.update_target_model()
                        
-            if self.render:
-                self.env.render(episode_num)
+            
                 
             rewards_list.append(reward)
             
             print("Episode {p}, Score: {s}, Final Step: {t}, Goal: {g}".format(p=episode_num, s=reward,
                                                                                t=episode_num, g=done))
-            if self.recorder:
-                os.system("ffmpeg -r 2 -i ./results_agents_landmarks/snaps/%04d.png -b:v 40000 -minrate 40000 -maxrate 4000k -bufsize 1835k -c:v mjpeg -qscale:v 0 " + "./results_agents_landmarks/videos/{a1}_{a2}_{a3}_{a4}.avi".format(a1=self.num_agents,
-                                                                                                 a2=self.num_landmarks,
-                                                                                                 a3=self.game_mode,
-                                                                                                 a4=self.grid_size))
-                files = glob.glob('./results_agents_landmarks/snaps/*')
-                for f in files:
-                    os.remove(f)
+           
                     
             if not self.test:
                 if episode_num % 500 == 0:
@@ -142,7 +127,7 @@ if __name__ =="__main__":
     parser.add_argument('-pl', '--prioritization-scale', default=0.5, type=float, help='Scale for prioritization')
     parser.add_argument('-du', '--dueling', action='store_true', help='Enable Dueling architecture if "store_false" ')
 
-    parser.add_argument('-gn', '--gpu-num', default='2', type=str, help='Number of GPU to use')
+    parser.add_argument('-gn', '--gpu-num', default='1', type=str, help='Number of GPU to use')
     parser.add_argument('-test', '--test', default=0, help='Enable the test phase if "1"')
 
     # Game Parameters
@@ -150,9 +135,9 @@ if __name__ =="__main__":
     # Remove parser.add_argument('-lm', '--landmarks-number', default=5, type=int, help='The number of landmarks')
     parser.add_argument('-g', '--grid-size', default=10, type=int, help='Grid size')
     # Remove parser.add_argument('-ts', '--max-timestep', default=100, type=int, help='Maximum number of timesteps per episode')
-    parser.add_argument('-gm', '--game-mode', choices=[0, 1], type=int, default=1, help='Mode of the game, '
-                                                                                        '0: landmarks and agents fixed, '
-                                                                                        '1: landmarks and agents random ')
+    #parser.add_argument('-gm', '--game-mode', choices=[0, 1], type=int, default=1, help='Mode of the game, '
+    #                                                                                    '0: landmarks and agents fixed, '
+    #                                                                                    '1: landmarks and agents random ')
 
     # Remove parser.add_argument('-rw', '--reward-mode', choices=[0, 1, 2], type=int, default=0, help='Mode of the reward,'
     #                                                                                         '0: Only terminal rewards'
