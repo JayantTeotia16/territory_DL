@@ -60,10 +60,12 @@ class Environment(object):
         rewards_list = []
         max_score = -10000
         for episode_num in range(self.episodes_number):
-            state_vis, state = self.env.reset()
+            state_vis, s, state = self.env.reset()
             self.num_landmarks = self.env.num_landmarks
-            state = state.reshape((1,len(state)))
-            state = np.array(state)
+            
+            state = state.reshape((1,36,4,1))
+            print(np.shape(state),'yay')
+            #state = np.array(state)
             done = False
             actions = []
             
@@ -84,7 +86,7 @@ class Environment(object):
                     print(aa,"1")
                     agent.train(state,aa)                    
                     agent.decay_epsilon()
-                    agent.update_target_model()
+                    #agent.update_target_model()
                        
             
                 

@@ -56,7 +56,7 @@ class Agent(object):
             a = self.brain.predict_one_sample(state)
             print(a,"CHECK")
             for i in range(len(a)):
-                if abs(a[i]) >= 0.5:
+                if abs(a[i]) >= 0:
                     a[i] = 1
                 else:
                     a[i] = 0

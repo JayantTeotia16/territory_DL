@@ -5,6 +5,18 @@ def fun(defender,att,time):
     D = np.array(defender)
     I = np.array(att)
     T_time = np.array(time)
+    num = [i for i in range(len(T_time))]
+    test = np.zeros((len(T_time),4))
+    #print(np.shape(T_time))
+    test[:,0:2] = I
+    test[:,2] = T_time.ravel()
+    test[:,-1] = num
+    test = np.array(test[test[:, 2].argsort()])
+    I = np.array(test[:,0:2])
+    T_time = np.array(test[:,2])
+
+    #print(I,test)
+
     D = D - 5
     I = I - 5
     T_pos = I
@@ -54,4 +66,9 @@ def fun(defender,att,time):
                 break
     for j in range(N):
         a[j].pop(0)
+    #print(a)
+    for i in range(len(a)):
+        for j in range(len(a[i])):
+            a[i][j] = test[int(a[i][j])][3]
+    #print(a)
     return a

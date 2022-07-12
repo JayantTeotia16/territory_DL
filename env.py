@@ -67,23 +67,45 @@ class territory:
             self.b3.append(_)
         a1 = [44,53,56]
 
-            
-        
+        x = np.zeros((36,1))
+        y = np.zeros((36,1))
+        cd = np.zeros((36,1))
+        cd_num = self.num_agents
+        #self.num_agents = cd_num
+        cd_idx = np.random.choice(range(self.state_size), size=cd_num, replace=False)
+        for _ in range(cd_num):
+            cd[cd_idx[_]] = 1
+        for i in range(0,10):   
+            y[i] = i
+        for i in range(10,19):   
+            x[i] = i-9     
+            y[i] = 9
+        for i in range(19,27):
+            x[i] = 9
+            y[i] = 27 - i
+        for i in range(27,36):
+            x[i] = 36- i
+        #x = np.reshape(x,(1,36))
+        #y = np.reshape(x,(1,36))
         idx = np.random.choice(range(self.state_size), size=self.num_landmarks, replace=False)
-        idx_value = np.ones(self.state_size)*10000
+        idx_value = np.ones((36,1))*10000
         for _ in range(self.num_landmarks):
             idx_value[idx[_]] = np.random.randint(5,10)
             b1.append(b2[idx[_]])
+        #for _ in range(cd_num):
+        #   b1.append(b2[cd_idx[_]])
         positions_idx = np.concatenate((b1,a1))
-        return [cells, positions_idx, idx_value]
+        fin_in = np.concatenate((x, y, idx_value, cd), axis = 1)
+        #print(np.shape(fin_in),'ay')
+        return [cells, positions_idx, idx_value, fin_in]
 
     def reset(self):  # initialize the world
 
         self.terminal = False
         self.num_landmarks = np.random.randint(1,6)
         print(self.num_landmarks,"NUMLAND")
-        [self.cells, self.positions_idx, self.idx_val] = self.set_positions_idx()
-
+        [self.cells, self.positions_idx, self.idx_val, fin_in] = self.set_positions_idx()
+        #self.idx_val = np.reshape(self.idx_val,(1,36))
         # separate the generated position indices for pursuers, and evaders
         landmarks_positions_idx = self.positions_idx[0:self.num_landmarks]
         agents_positions_idx = self.positions_idx[self.num_landmarks:self.num_landmarks + self.num_agents]
@@ -96,7 +118,7 @@ class territory:
         initial_state_vis = list(sum(self.landmarks_positions + self.agents_positions, ()))
         self.state_repeat = initial_state_vis
 
-        return initial_state_vis, self.idx_val
+        return initial_state_vis, self.idx_val, fin_in
         
     def action_space(self):
         return (self.grid_size *4) -4

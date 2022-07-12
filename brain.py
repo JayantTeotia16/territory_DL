@@ -1,6 +1,6 @@
 import os
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, Lambda, Input, Concatenate
+from tensorflow.keras.layers import Flatten, Activation, UpSampling2D, Conv2D, Dense, Lambda, Input, Concatenate
 from tensorflow.keras.optimizers import *
 import tensorflow as tf
 from tensorflow.keras import backend as K
@@ -31,7 +31,7 @@ class Brain(object):
         self.dueling = arguments['dueling']
         self.optimizer_model = arguments['optimizer']
         self.model = self._build_model()
-        self.model_ = self._build_model()
+        #self.model_ = self._build_model()
 
     def _build_model(self):
 
@@ -56,15 +56,25 @@ class Brain(object):
             z = Lambda(lambda a: K.expand_dims(a[:, 0], axis=-1) + a[:, 1:] - K.mean(a[:, 1:], keepdims=True),
                        output_shape=(self.action_size,))(w)
         else:
-            x = Input(shape=(self.state_size,))
+            #x = Input(shape=(self.state_size,))
 
             # a series of fully connected layer for estimating Q(s,a)
 
-            y1 = Dense(self.num_nodes, activation='relu')(x)
-            y2 = Dense(self.num_nodes, activation='relu')(y1)
-            z = Dense(self.action_size, activation="sigmoid")(y2)
+            #y1 = Dense(self.num_nodes, activation='relu')(x)
+            #y2 = Dense(self.num_nodes, activation='relu')(y1)
+            #z = Dense(self.action_size, activation="sigmoid")(y2)
+            model = Sequential()
+            model.add(Conv2D(64, kernel_size=3, strides=1, input_shape=(36,4,1), padding="same"))
+            model.add(Activation("relu"))
+            model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
+            model.add(Activation("relu"))
+            model.add(Flatten())
+            model.add(Dense(self.action_size, activation='sigmoid'))
+            model.summary()
+            x = Input(shape=(36,4,1))
+            y = model(x)
 
-        model = Model(inputs=x, outputs=z)
+        model1 = Model(inputs=x, outputs=y)
 
         if self.optimizer_model == 'Adam':
             optimizer = Adam(lr=self.learning_rate, clipnorm=1.)
@@ -73,19 +83,20 @@ class Brain(object):
         else:
             print('Invalid optimizer!')
         
-        model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=False), optimizer=optimizer)
+        model1.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=False), optimizer=optimizer)
         
         if self.test:
             if not os.path.isfile(self.weight_backup):
                 print('Error:no file')
             else:
-                model.load_weights(self.weight_backup)
+                model1.load_weights(self.weight_backup)
 
-        return model
+        return model1
 
     def train(self, x, y, sample_weight=None, epochs=1, verbose=0):  # x is the input to the network and y is the output
 
-        self.model.fit(x, y, batch_size=len(x), sample_weight=sample_weight, epochs=epochs, verbose=verbose)
+        self.model.fit(x, y, batch_size=1, sample_weight=sample_weight, epochs=epochs, verbose=verbose)
+        #self.model.train(x, y)
 
     def predict(self, state, target=False):
         if target:  # get prediction from target network
@@ -94,7 +105,7 @@ class Brain(object):
             return self.model.predict(state)
 
     def predict_one_sample(self, state, target=False):
-        return self.predict(state.reshape(1,self.state_size), target=target).flatten()
+        return self.predict(state.reshape(1,36,4,1), target=target).flatten()
 
     def update_target_model(self):
         self.model_.set_weights(self.model.get_weights())
