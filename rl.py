@@ -63,7 +63,7 @@ class Environment(object):
             state_vis, s, state = self.env.reset()
             self.num_landmarks = self.env.num_landmarks
             
-            state = state.reshape((1,36,4,1))
+            state = state.reshape((1,36,3,1))
             print(np.shape(state),'yay')
             #state = np.array(state)
             done = False

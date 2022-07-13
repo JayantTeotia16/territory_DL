@@ -73,8 +73,7 @@ class territory:
         cd_num = self.num_agents
         #self.num_agents = cd_num
         cd_idx = np.random.choice(range(self.state_size), size=cd_num, replace=False)
-        for _ in range(cd_num):
-            cd[cd_idx[_]] = 1
+        
         for i in range(0,10):   
             y[i] = i
         for i in range(10,19):   
@@ -85,6 +84,10 @@ class territory:
             y[i] = 27 - i
         for i in range(27,36):
             x[i] = 36- i
+        for _ in range(cd_num):
+            cd[cd_idx[_]] = 1
+            #a1[_] = int(x[cd_idx[_]]*10 + y[cd_idx[_]])
+        print(a1,'a1')
         #x = np.reshape(x,(1,36))
         #y = np.reshape(x,(1,36))
         idx = np.random.choice(range(self.state_size), size=self.num_landmarks, replace=False)
@@ -95,7 +98,7 @@ class territory:
         #for _ in range(cd_num):
         #   b1.append(b2[cd_idx[_]])
         positions_idx = np.concatenate((b1,a1))
-        fin_in = np.concatenate((x, y, idx_value, cd), axis = 1)
+        fin_in = np.concatenate((x, y, idx_value), axis = 1)
         #print(np.shape(fin_in),'ay')
         return [cells, positions_idx, idx_value, fin_in]
 

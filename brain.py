@@ -64,14 +64,14 @@ class Brain(object):
             #y2 = Dense(self.num_nodes, activation='relu')(y1)
             #z = Dense(self.action_size, activation="sigmoid")(y2)
             model = Sequential()
-            model.add(Conv2D(64, kernel_size=3, strides=1, input_shape=(36,4,1), padding="same"))
+            model.add(Conv2D(64, kernel_size=3, strides=1, input_shape=(36,3,1), padding="same"))
             model.add(Activation("relu"))
             model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
             model.add(Activation("relu"))
             model.add(Flatten())
             model.add(Dense(self.action_size, activation='sigmoid'))
             model.summary()
-            x = Input(shape=(36,4,1))
+            x = Input(shape=(36,3,1))
             y = model(x)
 
         model1 = Model(inputs=x, outputs=y)
@@ -105,7 +105,7 @@ class Brain(object):
             return self.model.predict(state)
 
     def predict_one_sample(self, state, target=False):
-        return self.predict(state.reshape(1,36,4,1), target=target).flatten()
+        return self.predict(state.reshape(1,36,3,1), target=target).flatten()
 
     def update_target_model(self):
         self.model_.set_weights(self.model.get_weights())
