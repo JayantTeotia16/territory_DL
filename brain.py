@@ -1,6 +1,6 @@
 import os
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Flatten, Activation, UpSampling2D, Conv2D, Dense, Lambda, Input, Concatenate
+from tensorflow.keras.layers import Flatten, Activation, UpSampling2D, Conv3D, Dense, Lambda, Input, Concatenate
 from tensorflow.keras.optimizers import *
 import tensorflow as tf
 from tensorflow.keras import backend as K
@@ -64,14 +64,16 @@ class Brain(object):
             #y2 = Dense(self.num_nodes, activation='relu')(y1)
             #z = Dense(self.action_size, activation="sigmoid")(y2)
             model = Sequential()
-            model.add(Conv2D(64, kernel_size=3, strides=1, input_shape=(36,4,1), padding="same"))
+            model.add(Conv3D(16, kernel_size=3, strides=1, padding = 'same', input_shape=(1,10,10,3)))
             model.add(Activation("relu"))
-            model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
+            model.add(Conv3D(64, kernel_size=3, strides=1, padding = 'same'))
+            model.add(Activation("relu"))
+            model.add(Conv3D(256, kernel_size=3, strides=1, padding = 'same'))
             model.add(Activation("relu"))
             model.add(Flatten())
             model.add(Dense(self.action_size, activation='sigmoid'))
             model.summary()
-            x = Input(shape=(36,4,1))
+            x = Input(shape=(1,10,10,3))
             y = model(x)
 
         model1 = Model(inputs=x, outputs=y)
@@ -105,7 +107,7 @@ class Brain(object):
             return self.model.predict(state)
 
     def predict_one_sample(self, state, target=False):
-        return self.predict(state.reshape(1,36,4,1), target=target).flatten()
+        return self.predict(state.reshape(1,1,10,10,3), target=target).flatten()
 
     def update_target_model(self):
         self.model_.set_weights(self.model.get_weights())

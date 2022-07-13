@@ -66,7 +66,7 @@ class territory:
         for _ in b2:    
             self.b3.append(_)
         a1 = [44,53,56]
-
+        
         x = np.zeros((36,1))
         y = np.zeros((36,1))
         cd = np.zeros((36,1))
@@ -105,20 +105,27 @@ class territory:
         self.num_landmarks = np.random.randint(1,6)
         print(self.num_landmarks,"NUMLAND")
         [self.cells, self.positions_idx, self.idx_val, fin_in] = self.set_positions_idx()
+        mask = np.zeros((3,10,10))*255
         #self.idx_val = np.reshape(self.idx_val,(1,36))
         # separate the generated position indices for pursuers, and evaders
         landmarks_positions_idx = self.positions_idx[0:self.num_landmarks]
         agents_positions_idx = self.positions_idx[self.num_landmarks:self.num_landmarks + self.num_agents]
-
+        
         # map generated position indices to positions
         self.landmarks_positions = [self.cells[pos] for pos in landmarks_positions_idx]
         self.agents_positions = [self.cells[pos] for pos in agents_positions_idx]
+        for i in range(len(self.landmarks_positions)):
+
+            mask[0][self.landmarks_positions[i][0]][self.landmarks_positions[i][1]] = 255
+            mask[1][self.landmarks_positions[i][0]][self.landmarks_positions[i][1]] = self.idx_val[i]
+        for i in range(len(self.agents_positions)):
+            mask[2][self.agents_positions[i][0]][self.agents_positions[i][1]] = 100 + 40*i
         self.agents_positions_repeat = self.agents_positions 
 
         initial_state_vis = list(sum(self.landmarks_positions + self.agents_positions, ()))
         self.state_repeat = initial_state_vis
 
-        return initial_state_vis, self.idx_val, fin_in
+        return initial_state_vis, self.idx_val, mask
         
     def action_space(self):
         return (self.grid_size *4) -4
